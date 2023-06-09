@@ -66,11 +66,11 @@ posting_times = {
         [14,0]
     ]
 }
-accounts = [1, 2, 3]
+accounts = [4, 2, 3]
 
 CLIP_LEN = 67
 FUNNY_CLIP = "copy.mp4"
-VIDEOS_DIRECTORY = ""
+VIDEOS_DIRECTORY = f"/media/{os.getlogin()}/MOVIE/videos/"
 
 def create_image(text, offset):
 
@@ -125,8 +125,6 @@ def create_clips(location, clip_length):
     video.close()
     
 
-
-
 if __name__ == "__main__":
     if not os.path.isdir('clips'):
         os.makedirs('clips')
@@ -136,13 +134,15 @@ if __name__ == "__main__":
         if len(clips_directory) == 0:
             videos_directory = os.listdir(VIDEOS_DIRECTORY)
             if len(videos_directory) > 0:
-                create_clips(videos_directory[0], CLIP_LEN)
-                os.remove(f"{VIDEOS_DIRECTORY}/{videos_directory[0]}")
+                cur_file = f"{VIDEOS_DIRECTORY}/{videos_directory[0]}"
+                create_clips(cur_file, CLIP_LEN)
+                os.remove(cur_file)
             else:
                 break
         
         while len(clips_directory) > 0:
             time_now = datetime.datetime.now()
+            print(time_now)
 
             if [time_now.hour, time_now.minute] in posting_times[time_now.weekday()]:
                 cur_clip = clips_directory[0]
