@@ -3,6 +3,7 @@ import numpy as np
 import time
 import os
 import datetime
+import textwrap
 
 from uploader import upload
 
@@ -74,17 +75,39 @@ VIDEOS_DIRECTORY = f"/media/{os.getlogin()}/MOVIE/videos/"
 
 def create_image(text, offset):
 
-    font = ImageFont.truetype("font.ttf", size=60)
+    font = ImageFont.truetype("font.ttf", size=50)
     w, h = font.getsize(text)
 
     img = Image.new('RGB', (720, 386), (0, 0, 0))
     d = ImageDraw.Draw(img)
     W, H = img.size
-    d.text((W/2,H/2 + offset), text, fill=(200, 200, 200), font=font, anchor="mm")
+    d.text((W/2,H/2 + offset), text, fill=(200, 200, 200), font=font, anchor="mm", align="center")
 
     return np.asarray(img)
 
-def create_clips(location, clip_length):
+def create_clip(location, start, end, part):
+    clip = VideoFileClip(location).subclip(start, end)
+    clip = crop(clip, width=clip.w-260, x_center=clip.w/2)
+    clip = clip.resize(width=720).margin(top=386, bottom=386)
+
+    wrapper = textwrap.TextWrapper(width=23) 
+    clip_title = wrapper.wrap(text=location.split("\\")[-1].split(".")[0])
+
+    part_image = ImageClip(create_image(f"Part {part}", -50), duration=clip.duration)
+    title_image = ImageClip(create_image("\n".join(clip_title), 50), duration=clip.duration)
+
+    v = CompositeVideoClip([clip.set_position(("center", "top")), part_image.set_position(("center", "bottom")), title_image.set_position(("center", "top"))])
+
+    v.write_videofile(f"./clips/part {part} #foryou #movie.mp4", preset="ultrafast")
+    
+    clip.close()
+    part_image.close()
+    title_image.close()
+    v.close()
+
+    return clip.duration
+
+def build_clips(location, clip_length):
     video = VideoFileClip(location)
     cursor = 0
     part = 1
@@ -92,39 +115,19 @@ def create_clips(location, clip_length):
     while cursor < video.duration:
         random_addition = random.randint(0,40)
         if video.duration < (cursor + clip_length + 26 + random_addition):
-            clip = VideoFileClip(location).subclip(cursor, video.duration)
+            clip_duration = create_clip(location, cursor, video.duration, part)
         else:
-            clip = VideoFileClip(location).subclip(cursor, cursor + random_addition + clip_length)
+            clip_duration = create_clip(location, cursor, cursor + random_addition + clip_length, part)
 
-        clip = crop(clip, width=clip.w-260, x_center=clip.w/2)
-        clip = clip.resize(width=720).margin(top=386, bottom=386)
-
-        ''' # Temp Clip Code
-
-        temp = VideoFileClip(FUNNY_CLIP).without_audio()
-        random_cursor = random.randint(0, int(temp.duration) - int(clip.duration) - 10)
-        temp = crop(temp, width=temp.w-584, x_center=temp.w/2)
-        temp = temp.resize(width= 720).subclip(random_cursor, random_cursor + clip.duration)
-        '''
-
-        part_image = ImageClip(create_image(f"Part {part}", -100), duration=clip.duration)
-        title_image = ImageClip(create_image(location.split(".")[0], 100), duration=clip.duration)
-
-        v = CompositeVideoClip([clip.set_position(("center", "top")), part_image.set_position(("center", "bottom")), title_image.set_position(("center", "top"))])
-
-        v.write_videofile(f"./clips/part {part} #foryou #movie.mp4", preset="ultrafast")
-
-        cursor += clip.duration
+        cursor += clip_duration
         part += 1
-        
-        clip.close()
-        part_image.close()
-        title_image.close()
-        v.close()
-
+    
     video.close()
     
+<<<<<<< HEAD
 
+=======
+>>>>>>> 559101441e939a4242921f74904e4959d622a509
 if __name__ == "__main__":
     if not os.path.isdir('clips'):
         os.makedirs('clips')
@@ -134,9 +137,14 @@ if __name__ == "__main__":
         if len(clips_directory) == 0:
             videos_directory = os.listdir(VIDEOS_DIRECTORY)
             if len(videos_directory) > 0:
+<<<<<<< HEAD
                 cur_file = f"{VIDEOS_DIRECTORY}/{videos_directory[0]}"
                 create_clips(cur_file, CLIP_LEN)
                 os.remove(cur_file)
+=======
+                build_clips(videos_directory[0], CLIP_LEN)
+                os.remove(f"{VIDEOS_DIRECTORY}/{videos_directory[0]}")
+>>>>>>> 559101441e939a4242921f74904e4959d622a509
             else:
                 break
         
