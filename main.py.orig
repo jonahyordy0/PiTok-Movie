@@ -123,7 +123,11 @@ def build_clips(location, clip_length):
         part += 1
     
     video.close()
+    
+<<<<<<< HEAD
 
+=======
+>>>>>>> 559101441e939a4242921f74904e4959d622a509
 if __name__ == "__main__":
     if not os.path.isdir('clips'):
         os.makedirs('clips')
@@ -133,8 +137,14 @@ if __name__ == "__main__":
         if len(clips_directory) == 0:
             videos_directory = os.listdir(VIDEOS_DIRECTORY)
             if len(videos_directory) > 0:
+<<<<<<< HEAD
+                cur_file = f"{VIDEOS_DIRECTORY}/{videos_directory[0]}"
+                create_clips(cur_file, CLIP_LEN)
+                os.remove(cur_file)
+=======
                 build_clips(videos_directory[0], CLIP_LEN)
                 os.remove(f"{VIDEOS_DIRECTORY}/{videos_directory[0]}")
+>>>>>>> 559101441e939a4242921f74904e4959d622a509
             else:
                 break
         
